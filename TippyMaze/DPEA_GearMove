@@ -1,0 +1,57 @@
+from hardware.DPEAMotor import DPEAMotor
+from hardware.LidarSensor import LidarSensor
+import time
+
+upper_sensor = LidarSensor(port=0, threshold=30)  # second sensor on ramp down
+lower_sensor = LidarSensor(port=2, threshold=30)  # second sensor on ramp down
+
+dpea_motor = DPEAMotor(motor_port=2)
+
+if __name__ == '__main__':
+    upper_sensor.reset()
+    upper_sensor.refresh_last_read()
+    lower_sensor.reset()
+    lower_sensor.refresh_last_read()
+    dpea_motor.motor.set_limit_hardstop(False)
+    #x = time.time()
+    x = 0
+    switch = True
+    try:
+        while True:
+            print(dpea_motor.motor.read_switch())
+            lower_sensor.refresh_last_read()
+
+            if lower_sensor.distance() < lower_sensor.threshold:
+                dpea_motor.motor.run(1, 70)
+
+            if dpea_motor.motor.read_switch() == 1 and not switch:
+                time.sleep(.05)
+                if dpea_motor.motor.read_switch() == 1 and not switch:
+                    x += 1
+                    print("x = ", x)
+                    switch = True
+                    if x == 3:
+                        dpea_motor.motor.stop()
+            elif dpea_motor.motor.read_switch() == 0 and switch:
+                time.sleep(.05)
+                if dpea_motor.motor.read_switch() == 0 and switch:
+                    print("in")
+                    switch = False
+
+
+            # dpea_motor.motor.set_limit_hardstop(False)
+            # dpea_motor.motor.run(1, 70)
+            # if (time.time() > x + 10):
+            #     while dpea_motor.motor.read_switch() != 1:
+            #         pass
+            #     dpea_motor.motor.stop()
+            #     time.sleep(5)
+            #     x = time.time()
+
+    except KeyboardInterrupt:
+        print("in")
+        dpea_motor.motor.stop()
+        print("Stop")
+        dpea_motor.motor.free_all()
+        print("free")
+        quit() # Prepare for script termination

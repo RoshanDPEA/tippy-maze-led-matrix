@@ -1,0 +1,16 @@
+import pygame
+import os
+from hardware.Joystick import Joystick
+
+controller = Joystick(0, True)
+
+controller.joystick.get_numaxes()
+print(controller.joystick.get_numaxes())
+print(controller.joystick.get_numbuttons())
+
+while True:
+    controller.refresh()
+    for i in range(controller.joystick.get_numbuttons()):
+        if controller.joystick.get_button(i):
+            print(i)
+
